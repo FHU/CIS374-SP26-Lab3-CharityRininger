@@ -16,8 +16,15 @@ public class MinHeap<T> where T : IComparable<T>
 
     public MinHeap(T[] initialArray = null)
     {
-       
-        }  
+        array = new T[initialSize];
+
+        if (initialArray == null) return;
+
+        foreach (var item in initialArray)
+        {
+            Add(item);
+        }
+
     }
 
     /// <summary>
@@ -26,6 +33,12 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public T Peek()
     {
+        if (IsEmpty)
+        {
+            throw new InvalidOperationException();
+        }
+
+        return array[0];
     }
 
     // TODO
@@ -35,7 +48,14 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public void Add(T item)
     {
-        
+        array[Count] = item;
+        TrickleUp(Count);
+        Count++;
+
+        if (Count == Capacity)
+        {
+            DoubleArrayCapacity();
+        }
     }
 
     public T Extract()
@@ -45,11 +65,11 @@ public class MinHeap<T> where T : IComparable<T>
 
     /// <summary>
     /// Removes and returns the max item in the min-heap.
-    /// Time complexity: O( ? )
+    /// Time complexity: O( n )
     /// </summary>
     public T ExtractMax()
     {
-
+        return default;
     }
 
     // TODO
@@ -59,7 +79,24 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public T ExtractMin()
     {
-       
+        if (IsEmpty)
+        {
+            throw new InvalidOperationException();
+        }
+
+        // save the min from the root
+        T min = array[0];
+
+        // swap the min with the last item
+        array[0] = array[Count - 1];
+
+        // remove the "last" item
+        Count--;
+
+        // trickle down from root
+        TrickleDown(0);
+
+        return min;
     }
 
     /// <summary>
@@ -68,7 +105,15 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public bool Contains(T value)
     {
-      
+        for (int i = 0; i < Count; i++)
+        {
+            if (array[i].CompareTo(value) == 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // TODO
