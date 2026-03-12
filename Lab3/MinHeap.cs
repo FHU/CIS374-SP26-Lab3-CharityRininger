@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Intrinsics.X86;
 
 namespace Lab3;
 
@@ -69,7 +70,20 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public T ExtractMax()
     {
-        return default;
+        if (IsEmpty)
+        {
+            throw new InvalidOperationException();
+        }
+        T max = array[0];
+        for (int i = 1; i < Count; i++)
+        {
+            if (array[i].CompareTo(max) > 0)
+            {
+                max = array[i];
+            }
+        }
+        Remove(max);
+        return max;
     }
 
     // TODO
@@ -123,11 +137,35 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public void Update(T oldValue, T newValue)
     {
+        if (IsEmpty)
+            throw new InvalidOperationException();
+        bool found = false;
         // find the node to update - O(n)
+        for (int i = 0; i < Count; i++)
+        {
+            if (array[i].Equals(oldValue))
+            {
+                // update value - O(1)
+                array[i] = newValue;
+                found = true;
 
-        // update value - O(1)
+                // trickle up or trickle down - O( log(n) )
+                if(i == 0)
+                    TrickleDown(i);
+                if (array[i].CompareTo(array[Parent(i)]) < 0)
+                {
+                    TrickleUp(i);
+                }
+                if (array[i].CompareTo(array[Parent(i)]) > 0)
+                {
+                    TrickleDown(i);
+                }
+                break;
+            }
+        }
+        if (!found)
+            throw new InvalidOperationException($"Value {oldValue} not found in heap");
 
-        // trickle up or trickle down - O( log(n) )
 
     }
 
@@ -138,29 +176,66 @@ public class MinHeap<T> where T : IComparable<T>
     /// </summary>
     public void Remove(T value)
     {
+        if (IsEmpty)
+        {
+            throw new InvalidOperationException();
+        }
         // find the node to remove
-
-        // swap with last
-
-        // trickleX
-
-        // Count--
-
+        for (int i = 0; i < Count; i++)
+        {
+            if (array[i].Equals(value))
+            {
+                array[i] = array[Count - 1];
+                Count--;
+                if (i == 0 || array[i].CompareTo(array[Parent(i)]) < 0)
+                {
+                    TrickleDown(i);
+                }
+                if (array[i].CompareTo(array[Parent(i)]) > 0)
+                {
+                    TrickleUp(i);
+                }
+                break;
+            }
+        }
     }
 
     // TODO
     // Time Complexity: O( log n )
     private void TrickleUp(int index)
     {
-
+        if(index == 0)
+            return;
+        int parent = Parent(index);
+        if (array[index].CompareTo(array[parent]) < 0)
+        {
+            Swap(index, parent);
+            TrickleUp(parent);
+        }
     }
 
     // TODO
     // Time Complexity: O( log n )
-    private void TrickleDown(int index)
-    {
+private void TrickleDown(int index)
+{
+    int left = LeftChild(index);
+    int right = RightChild(index);
 
+    if (left >= Count)
+        return;
+    int smallChild = left;
+
+    if (right < Count && array[right].CompareTo(array[left]) < 0)
+    {
+        smallChild = right;
     }
+
+    if (array[index].CompareTo(array[smallChild]) > 0)
+    {
+        Swap(index, smallChild);
+        TrickleDown(smallChild);
+    }
+}
 
     // TODO
     /// <summary>
